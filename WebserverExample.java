@@ -17,10 +17,10 @@ class WebserverExample implements RequestHandler
 		pout.print(request);
 		pout.println("</pre>");
 
-		Hashtable<String,String> formData = request.parseFormData();
-
-		if (formData != null)
+		if (request.method.equals("POST"))
 		{
+			Hashtable<String,String> formData = request.parseFormData();
+
 			pout.println("<h1>You've also submitted some data!</h1>");
 			pout.println("<table border=\"1\"><tr><th>key</th><th>value</th></tr>");
 

@@ -23,13 +23,17 @@ public class Request
 		this.data = data;
 	}
 
-	public Hashtable<String,String> parseFormData() throws IOException
+	public Hashtable<String,String> parseFormData() throws HTTPException, IOException
 	{
 		// Only accept simple formatted form data of which we know the length
-		if (!headers.containsKey("Content-Type")
-		  || !headers.get("Content-Type").equals("application/x-www-form-urlencoded")
-		  || !headers.containsKey("Content-Length"))
-			return null;
+		if (!headers.containsKey("Content-Type"))
+			throw new HTTPException("Content-Type header missing");
+
+		if (!headers.get("Content-Type").equals("application/x-www-form-urlencoded"))
+			throw new HTTPException("Specified Content-Type not supported");
+
+		if (!headers.containsKey("Content-Length"))
+			throw new HTTPException("Content-Length header missing");
 		
 		Hashtable<String,String> values = new Hashtable<String,String>();
 		int bytesToRead = Integer.parseInt(headers.get("Content-Length"));
@@ -37,7 +41,7 @@ public class Request
 		// Two buffers for the key and value of the pairs plus a little reading state.
 		StringBuffer key = new StringBuffer();
 		StringBuffer value = new StringBuffer();
-		boolean readingValue = false;
+		StringBuffer buffer = key;
 
 		// Read only as many bytes as the Content-Length header specified. Block if necessary.
 		while (bytesToRead-- > 0)
@@ -58,20 +62,17 @@ public class Request
 						URLDecoder.decode(value.toString(), "UTF-8"));
 					key.setLength(0);
 					value.setLength(0);
-					readingValue = false;
+					buffer = key;
 					break;
 
 				// Reached the end of the key, start reading the value of the pair.
 				case '=':
-					readingValue = true;
+					buffer = value;
 					break;
 
 				// Just data, add it to the appropriate buffer.
 				default:
-					if (readingValue)
-						value.append((char) c);
-					else
-						key.append((char) c);
+					buffer.append((char) c);
 					break;
 			}
 		}
