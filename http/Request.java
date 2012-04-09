@@ -30,10 +30,10 @@ public class Request
 			throw new HTTPException("Content-Type header missing");
 
 		if (!headers.get("Content-Type").equals("application/x-www-form-urlencoded"))
-			throw new HTTPException("Specified Content-Type not supported");
+			throw new HTTPException("Specified Content-Type not supported"); // 415 Unsupported Media Type
 
 		if (!headers.containsKey("Content-Length"))
-			throw new HTTPException("Content-Length header missing");
+			throw new HTTPException("Content-Length header missing"); // 411 Length required
 		
 		Hashtable<String,String> values = new Hashtable<String,String>();
 		int bytesToRead = Integer.parseInt(headers.get("Content-Length"));
