@@ -1,5 +1,6 @@
 import calc.*;
 
+import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.*;
 
@@ -13,19 +14,30 @@ class CalculatorClient
 
 			Calculator calculator = (Calculator) registry.lookup("calculator");
 
-			Expression expression = ExpressionParser.parse("2 + 3 + 7");
+			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
-			System.out.println(calculator.calculate(expression));
+			String line;
+			while ((line = in.readLine()) != null)
+			{
+				// Empty line = stop
+				if (line.isEmpty())
+					break;
+
+				try
+				{
+					Expression expression = ExpressionParser.parse(line);
+
+					System.out.println(calculator.calculate(expression));
+				} 
+				catch (ParseException e)
+				{
+					System.out.println("Could not parse expression: " + e.getMessage());
+				}
+			}
+
+			in.close();
 		}
-		catch (RemoteException e)
-		{
-			e.printStackTrace();
-		}
-		catch (NotBoundException e)
-		{
-			e.printStackTrace();
-		}
-		catch (ParseException e)
+		catch (Exception e)
 		{
 			e.printStackTrace();
 		}
