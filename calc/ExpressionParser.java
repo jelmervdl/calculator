@@ -24,14 +24,23 @@ public class ExpressionParser
 
 			Expression right = parseExpression();
 
-			if (operator.equals("+"))
-				return new Addition(left, right);
+			switch (operator.charAt(0))
+			{
+				case '+':
+					return new Addition(left, right);
 
-			else if (operator.equals("*"))
-				return new Multiplication(left, right);
-			
-			else
-				throw new ParseException("Expected operator, found " + operator);
+				case '-':
+					return new Subtraction(left, right);
+
+				case '*':
+					return new Multiplication(left, right);
+
+				case '/':
+					return new Division(left, right);
+
+				default:
+					throw new ParseException("Expected operator, found '" + operator + "'");
+			}
 		}
 		catch (NoSuchElementException e)
 		{
