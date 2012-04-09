@@ -11,9 +11,16 @@ class Number implements Expression
 		this.value = value;
 	}
 
-	public Number(String value)
+	public Number(String value) throws ParseException
 	{
-		this.value = Double.parseDouble(value);
+		try
+		{
+			this.value = Double.parseDouble(value);
+		}
+		catch (NumberFormatException e)
+		{
+			throw new ParseException("Could not parse expression as number", e);
+		}
 	}
 
 	public double evaluate()
