@@ -6,27 +6,53 @@ import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.rmi.server.*;
+import java.util.*;
 
-class CalculatorServer extends UnicastRemoteObject implements Calculator
+class CalculatorServer extends UnicastRemoteObject implements Calculator, RequestHandler
 {
 	private static final long serialVersionUID = 1L;
-
-	private Expression lastExpression;
 
 	public CalculatorServer() throws RemoteException
 	{
 		super();
 	}
 
+	// Implements Calculator interface
 	public double calculate(Expression e) throws RemoteException
 	{
-		lastExpression = e;
 		return e.evaluate();
 	}
 
-	public Expression getLastExpression()
+	// Implements RequestHandler interface
+	public void respond(Request request, Response response) throws Exception
 	{
-		return lastExpression;
+		response.headers.put("Content-Type", "text/html; charset=utf8");
+		response.writeHeader(200, "OK");
+
+		PrintStream pout = new PrintStream(response.out);
+		
+		// If the form was sent, process it
+		if (request.method.equals("POST"))
+		{
+			try
+			{
+				Hashtable<String,String> formData = request.parseFormData();
+				Expression expression = ExpressionParser.parse(formData.get("expression"));
+				double result = calculate(expression);
+				pout.println("<pre>" + expression + " = " + result + "</pre>");
+			}
+			catch (Exception e)
+			{
+				pout.println("<pre>");
+				e.printStackTrace(pout);
+				pout.println("</pre>");
+			}
+		}
+
+		pout.println("<form method=\"post\">");
+		pout.println("	<input type=\"text\" name=\"expression\">");
+		pout.println("	<input type=\"submit\" value=\"calculate!\">");
+		pout.println("</form>");
 	}
 
 	static public void main(String[] args)
@@ -37,32 +63,17 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator
 	
 		try
 		{
-			final CalculatorServer calculator = new CalculatorServer();
+			CalculatorServer calculator = new CalculatorServer();
 	
 			// Bind this object instance to the name "calculator"
 			Registry registery = LocateRegistry.createRegistry(9999);
 			registery.rebind("calculator", calculator);
-	
 			System.out.println("Calculator bound in registry");
 
-			Webserver webserver = new Webserver(new RequestHandler() {
-				public void respond(Request request, Response response) throws Exception {
-					response.headers.put("Content-Type", "text/html; charset=utf8");
-
-					if (calculator.getLastExpression() != null)
-					{
-						response.writeHeader(200, "OK");
-
-						PrintStream pout = new PrintStream(response.out);
-						pout.println("<pre>" + calculator.getLastExpression() + "</pre>");
-					}
-					else
-						response.writeHeader(404, "Not found");
-				}
-			}, 8080);
-
-			// Run the webserver in a separate thread.
+			// Run the webservice in a separate thread.
+			Webserver webserver = new Webserver(calculator, 8080);
 			new Thread(webserver).start();
+			System.out.println("Calculator webservice running on port 8080");
 		}
 		catch (Exception e)
 		{
