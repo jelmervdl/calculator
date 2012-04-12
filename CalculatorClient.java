@@ -6,14 +6,26 @@ import java.rmi.registry.*;
 
 class CalculatorClient
 {
-	static public void main(String[] args)
+	private String host;
+
+	private int port;
+
+	public CalculatorClient()
+	{
+		// Host is null.
+	}
+
+	public CalculatorClient(String host, int port)
+	{
+		this.host = host;
+		this.port = port;
+	}
+
+	public void run()
 	{
 		try
 		{
-			Registry registry = LocateRegistry.getRegistry("localhost", 9999);
-
-			Calculator calculator = (Calculator) registry.lookup("calculator");
-
+			Calculator calculator = getCalculator();
 			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
 			String line;
@@ -41,5 +53,23 @@ class CalculatorClient
 		{
 			e.printStackTrace();
 		}
+	}
+
+	private Calculator getCalculator() throws RemoteException, NotBoundException
+	{
+		if (host == null)
+			return new CalculatorImpl();
+
+		Registry registry = LocateRegistry.getRegistry(host, port);
+		return (Calculator) registry.lookup("calculator");
+	}
+
+	static public void main(String[] args)
+	{
+		CalculatorClient client = args.length >= 2
+			? new CalculatorClient(args[0], Integer.parseInt(args[1]))
+			: new CalculatorClient();
+
+		client.run();
 	}
 }
