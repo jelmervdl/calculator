@@ -29,7 +29,6 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator, Reques
 	public void respond(Request request, Response response) throws Exception
 	{
 		response.headers.put("Content-Type", "text/html; charset=utf8");
-		response.writeHeader(200, "OK");
 
 		Template template = new Template(new File("template.html"), Charset.forName("UTF-8"));
 		Hashtable<String,String> variables = new Hashtable<String,String>();
@@ -47,15 +46,28 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator, Reques
 			{
 				Hashtable<String,String> formData = request.parseFormData();
 				variables.put("expression", formData.get("expression"));
+
+				response.writeHeader(200, "OK");
 				
 				Expression expression = ExpressionParser.parse(formData.get("expression"));
 				variables.put("evaluated_expression", expression.toString());
 				variables.put("result", Double.toString(calculate(expression)));
 			}
-			catch (Exception e)
+			catch (ParseException e)
 			{
+				// Parse exceptions don't do much harm, it is just malformed user input.
+				variables.put("exception", e.getMessage());	
+			}
+			catch (HTTPException e)
+			{
+				// Now there is something wrong with the client that encoded the users request.
+				response.writeHeader(400, "Bad Request");
 				variables.put("exception", e.getMessage());
 			}
+		}
+		else
+		{
+			response.writeHeader(200, "OK");
 		}
 
 		PrintStream pout = new PrintStream(response.out);
