@@ -2,13 +2,57 @@
 <html>
 	<head>
 		<title>Calculator web interface</title>
+		<style>
+			body {
+				text-align: center;
+			}
+
+			pre {
+				display: block;
+				height: 100px;
+				line-height: 100px;
+				margin: 0;
+				padding: 0;
+			}
+
+			.result {
+				height: 80px;
+				line-height: 80px;
+				font-size: 40px;
+			}
+
+			.evaluated_expression {
+				height: 20px;
+				line-height: 20px;
+			}
+
+			.exception {
+				color: red;
+			}
+
+			form {
+				margin: 20px 0;
+			}
+
+			input[type=text]:focus {
+				outline: none;
+			}
+
+			input[type=text] {
+				font-size: 20px;
+				background: white;
+				border: 0;
+				border-bottom: 1px solid black;
+			}
+		</style>
 	</head>
 	<body>
 		{<pre class="result">{result}</pre>}
+		{<pre class="evaluated_expression">{evaluated_expression}</pre>}
 		{<pre class="exception">{exception}</pre>}
 
 		<form method="post">
-			<input type="expression" name="expression" value="{{expression}}">
+			<input type="text" name="expression" value="{{expression}}" placeholder="2 + 3" autofocus>
 			<input type="submit" value="Calculate!">
 		</form>
 	</body>

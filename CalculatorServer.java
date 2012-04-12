@@ -36,6 +36,7 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator, Reques
 
 		// Default values
 		variables.put("expression", "");
+		variables.put("evaluated_expression", "");
 		variables.put("result", "");
 		variables.put("exception", "");
 
@@ -48,6 +49,7 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator, Reques
 				variables.put("expression", formData.get("expression"));
 				
 				Expression expression = ExpressionParser.parse(formData.get("expression"));
+				variables.put("evaluated_expression", expression.toString());
 				variables.put("result", Double.toString(calculate(expression)));
 			}
 			catch (Exception e)
