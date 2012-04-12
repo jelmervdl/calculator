@@ -1,12 +1,14 @@
 import calc.*;
-
 import http.*;
+import util.*;
 
 import java.io.*;
 import java.rmi.*;
 import java.rmi.registry.*;
 import java.rmi.server.*;
 import java.util.*;
+
+import java.nio.charset.*;
 
 class CalculatorServer extends UnicastRemoteObject implements Calculator, RequestHandler
 {
@@ -29,30 +31,33 @@ class CalculatorServer extends UnicastRemoteObject implements Calculator, Reques
 		response.headers.put("Content-Type", "text/html; charset=utf8");
 		response.writeHeader(200, "OK");
 
-		PrintStream pout = new PrintStream(response.out);
-		
+		Template template = new Template(new File("template.html"), Charset.forName("UTF-8"));
+		Hashtable<String,String> variables = new Hashtable<String,String>();
+
+		// Default values
+		variables.put("expression", "");
+		variables.put("result", "");
+		variables.put("exception", "");
+
 		// If the form was sent, process it
 		if (request.method.equals("POST"))
 		{
 			try
 			{
 				Hashtable<String,String> formData = request.parseFormData();
+				variables.put("expression", formData.get("expression"));
+				
 				Expression expression = ExpressionParser.parse(formData.get("expression"));
-				double result = calculate(expression);
-				pout.println("<pre>" + expression + " = " + result + "</pre>");
+				variables.put("result", Double.toString(calculate(expression)));
 			}
 			catch (Exception e)
 			{
-				pout.println("<pre>");
-				e.printStackTrace(pout);
-				pout.println("</pre>");
+				variables.put("exception", e.getMessage());
 			}
 		}
 
-		pout.println("<form method=\"post\">");
-		pout.println("	<input type=\"text\" name=\"expression\">");
-		pout.println("	<input type=\"submit\" value=\"calculate!\">");
-		pout.println("</form>");
+		PrintStream pout = new PrintStream(response.out);
+		pout.print(template.render(variables));
 	}
 
 	static public void main(String[] args)
