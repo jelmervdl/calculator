@@ -4,11 +4,11 @@ import java.util.*;
 
 public class ExpressionParser
 {
-	private StringTokenizer tokenizer;
+	private MathTokenizer tokenizer;
 
 	private ExpressionParser(String expression)
 	{
-		tokenizer = new StringTokenizer(expression);
+		tokenizer = new MathTokenizer(expression);
 	}
 
 	private Expression parseExpression() throws ParseException
@@ -28,7 +28,6 @@ public class ExpressionParser
 				// it's a calculator, nobody is going to write something else than a number or an operator.
 				default:
 					lhs = new Number(left);
-
 			}
 
 			// e.g. "2 + 3", + token calls parseExpression(), tokenizer only contains "3"
