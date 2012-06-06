@@ -20,19 +20,18 @@ public class ExpressionParser
 
 			switch (left.charAt(0))
 			{
+				// lhs is a complete expression. This will parse till ')' or the end.
 				case '(':
 					lhs = parseExpression();
 					break;
 
-				case '-':
-					lhs = new Multiplication(new Number(-1.0), parseExpression());
-					break;
-
+				// it's a calculator, nobody is going to write something else than a number or an operator.
 				default:
 					lhs = new Number(left);
 
 			}
 
+			// e.g. "2 + 3", + token calls parseExpression(), tokenizer only contains "3"
 			if (!tokenizer.hasMoreTokens())
 				return lhs;
 
@@ -40,6 +39,10 @@ public class ExpressionParser
 
 			switch (operator.charAt(0))
 			{
+				// End of sub-clause
+				case ')':
+					return lhs;
+
 				case '+':
 					return new Addition(lhs, parseExpression());
 
@@ -51,9 +54,6 @@ public class ExpressionParser
 
 				case '/':
 					return new Division(lhs, parseExpression());
-
-				case ')':
-					return lhs;
 
 				default:
 					throw new ParseException("Expected operator, found '" + operator + "'");
