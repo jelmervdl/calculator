@@ -15,28 +15,45 @@ public class ExpressionParser
 	{
 		try
 		{
-			Expression left = new Number(tokenizer.nextToken());
+			String left = tokenizer.nextToken();
+			Expression lhs;
+
+			switch (left.charAt(0))
+			{
+				case '(':
+					lhs = parseExpression();
+					break;
+
+				case '-':
+					lhs = new Multiplication(new Number(-1.0), parseExpression());
+					break;
+
+				default:
+					lhs = new Number(left);
+
+			}
 
 			if (!tokenizer.hasMoreTokens())
-				return left;
+				return lhs;
 
 			String operator = tokenizer.nextToken();
-
-			Expression right = parseExpression();
 
 			switch (operator.charAt(0))
 			{
 				case '+':
-					return new Addition(left, right);
+					return new Addition(lhs, parseExpression());
 
 				case '-':
-					return new Subtraction(left, right);
+					return new Subtraction(lhs, parseExpression());
 
 				case '*':
-					return new Multiplication(left, right);
+					return new Multiplication(lhs, parseExpression());
 
 				case '/':
-					return new Division(left, right);
+					return new Division(lhs, parseExpression());
+
+				case ')':
+					return lhs;
 
 				default:
 					throw new ParseException("Expected operator, found '" + operator + "'");
