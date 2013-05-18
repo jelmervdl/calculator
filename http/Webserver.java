@@ -31,8 +31,8 @@ public class Webserver implements Runnable
 		}
 		catch (IOException e)
 		{
-			System.out.println("Could not accept connection");
-			e.printStackTrace();
+			System.err.println("Could not accept connection");
+			e.printStackTrace(System.err);
 		}
 	}
 }
